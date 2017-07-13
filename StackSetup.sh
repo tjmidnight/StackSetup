@@ -1,13 +1,4 @@
 #!/bin/bash
-# Clear the terminal
-clear
-
-echo "                     -----=====WARNING=====-----"
-echo "The most common reason for any part of this script failing is formatting."
-echo "           Putty, WSL and other such emulators wrap lines."
-echo " Paste this script into a fullscreen terminal or it *will* break things."
-echo "					   Press any key to continue..."
-read -n 1
 
 #MIT License
 #
@@ -31,6 +22,15 @@ read -n 1
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #SOFTWARE.
 
+# Clear the terminal
+clear
+
+echo "                     -----=====WARNING=====-----"
+echo "The most common reason for any part of this script failing is formatting."
+echo "           Putty, WSL and other such emulators wrap lines."
+echo " Paste this script into a fullscreen terminal or it *will* break things."
+echo "					   Press any key to continue..."
+read -n 1
 ######################### Variables / Globals #########################
 # Get OS information.
 OS=$(lsb_release -si)
@@ -38,8 +38,8 @@ ARCH=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
 VER=$(lsb_release -sr)
 OSST=$OS" "$VER
 LOCALIP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
-# bash generate random 32 character alphanumeric string (upper and lowercase) and 
-RANDSTRING=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+# This Broke it, Fix Later.
+#RANDSTRING=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
 
 # Get script information
 SCRIPT=$(readlink -f "$0")
@@ -63,7 +63,7 @@ mainmenu () {
       updatesystem
   elif [ "$mainmenuinput" = "3" ]; then
       setwebstack
-  elif [[ "$mainmenuinput" = (q|Q) ]];then
+  elif [[ $mainmenuinput = "q" || $mainmenuinput = "Q" ]];then
       quitscript
   else
       invalidselection
@@ -93,7 +93,7 @@ settzdata () {
       dpkg-reconfigure tzdata
 	  dpkg-reconfigure locales
 	  selfsigned
-  elif [[ $tzinput = (b|B) ]];then
+  elif [[ $tzinput = "b" || $tzinput = "B" ]];then
       mainmenu
   else
       invalidselection
@@ -133,7 +133,7 @@ updatesystem () {
       #bc is an arbitrary precision numeric processing language. Helps with evaluating version numbers.
 	  apt install bc
       updatesystem
-  elif [[ $updateinput = (b|B) ]];then
+  elif [[ $updateinput = "b" || $updateinput = "B" ]];then
       mainmenu
   else
       invalidselection
@@ -143,8 +143,10 @@ updatesystem () {
 
 # Main Menu Option 3 - Webstack
 setwebstack () {
+  infobloc
   echo "Press 1 to install LAMP - apache2, mysql, php7 - stack"
   echo "Press 2 to install LEMP - apache2, mysql, php7 - stack"
+  echo "Press b to go back"
   read -n 1 -p "Input Selection:" stackinput
   if [ "$stackinput" = "1" ]; then
     apache2_install
@@ -154,6 +156,8 @@ setwebstack () {
     nginx_install
 	mysql_install
 	php70_install
+  elif [[ $a2enput = "b" || $a2enput = "B" ]];then
+    setwebstack
   fi
 }
 
@@ -188,7 +192,7 @@ a2enmod_menu () {
 	/etc/init.d/apache2 restart
 	clear
 	setwebstack
-  elif [[ "$a2enput" = (b|B) ]];then
+  elif [[ $a2enput = "b" || $a2enput = "B" ]];then
       setwebstack
   else
       invalidselection
@@ -241,7 +245,7 @@ php7addons_menu () {
     apt install php7.0-dev php7.0-cli php7.0-json php7.0-gd php7.0-curl php7.0-xml php7.0-mbstring
 	/etc/init.d/php7.0-fpm restart
 	clear
-  elif [[ "$phpaddinput" = (b|B) ]];then
+  elif [[ $phpaddinput = "b" || $phpaddinput = "B" ]];then
     setwebstack
   else
     invalidselection
@@ -251,8 +255,8 @@ php7addons_menu () {
 
 php7config () {
   read -n 1 -p "Enable php info? [y]" php_info
-    if [ "$php_info" = (y|Y) ]; then
-    sh -c "echo '<?php phpinfo(); ?>' >> /var/www/html/"$RANDSTRING".php"
+    if [ "$php_info" = "(y|Y)" ]; then
+    sh -c "echo '<?php phpinfo(); ?>' >> /var/www/html/test.php"
     chown -R www-data:www-data /var/www/html/
     if [ pidof apache2 > /dev/null ]; then
       /etc/init.d/apache2 restart
@@ -280,11 +284,11 @@ php7config () {
   fi
   echo "The following version of php has been installed:"
   php --version
-  echo "Please check http://"$LOCALIP"/"$RANDSTRING".php"
-  echo "Press any key to DELETE "$RANDSTRING".php and continue..."
+  echo "Please check http://"$LOCALIP"/test.php"
+  echo "Press any key to DELETE test.php and continue..."
   read -n 1
 
-  rm -rf /var/www/html/$RANDSTRING.php
+  rm -rf /var/www/html/test.php
   setwebstack
 }
 
@@ -305,7 +309,7 @@ infobloc () {
 selfsigned () {
       echo "Installing CA Certificate to /usr/share/ca-certificates/StackSetup/CA.crt"
 	  echo "Press any key to continue..."
-      read -n 1
+      read -n 1 -p
  
 	  mkdir /usr/share/ca-certificates/StackSetup
 	  touch /usr/share/ca-certificates/StackSetup/CA.crt
@@ -334,9 +338,9 @@ apache2_install () {
   echo "If the above looks right, please visit http://"$LOCALIP" in a web browser and verify that apache2 is working."
   echo "Press y to verify and continue, or any other key to quit."
   read -n 1 -p "Input Selection:" verifyapache2
-  if [ "$verifyapache2" = (y|Y) ]; then
+  if [ "$verifyapache2" = "(y|Y)" ]; then
 	read -n 1 -p "Enable some Apache2 Mods? [y]" enablea2enmods
-	if [ "$enablea2enmods" = (y|Y) ]; then
+	if [[ $enablea2enmods = "y" || $enablea2enmods = "Y" ]];then
 	  a2enmod_menu
 	else
 	  setwebstack
@@ -363,6 +367,12 @@ nginx_install () {
   systemctl status nginx
   echo "Please visit http://"$LOCALIP" in a web browser and verify that nginx is working."
   echo "Press y to verify and continue, or any other key to quit. [y|N]"
+  read -n 1 -p "Input Selection:" verifynginx
+  if [[ $verifynginx = "y" || $verifynginx = "Y" ]];then
+	setwebstack
+  else
+    quitscript
+  fi
 }
 # Install mysql - Webstack Component
 mysql_install () {
@@ -388,11 +398,11 @@ php70_install () {
     apt install php7.0-mysql 
   fi
   read -n 1 -p "Install PHP7.0 Addons? [y]" enablephp7addons
-  if [ "$enablephp7addons" = (y|Y) ]; then
+  if [ "$enablephp7addons" = "(y|Y)" ]; then
 	php7addons_menu
   fi
   read -n 1 -p "Configure PHP settings? [y]" phpconfigsettings
-  if [ "$phpconfigsettings" = (y|Y) ]; then
+  if [[ $phpconfigsettings = "y" || $phpconfigsettings = "Y" ]];then
 	php7config
   fi
 }
