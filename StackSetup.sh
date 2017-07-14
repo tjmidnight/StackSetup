@@ -500,8 +500,8 @@ nginx_install () {
 # Install python - django - Webstack Component
 django_install () {
   apt install python3-pip javascript-common libjs-jquery python-django-common python3-django python3-sqlparse python3-tz
-  echo "The following version of nginx has been installed:"
-  django-admin -v
+  echo "The following version of django has been installed:"
+  python3 -c "import django; print(django.get_version())"
   echo "Press y to verify and continue, or any other key to quit. [y|N]"
   read -n 1 -p "Input Selection:" verifydjango
   if [ "$verifydjango" = "(y|Y)" ]; then
