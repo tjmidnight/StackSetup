@@ -158,7 +158,7 @@ setwebstack () {
 	mysql_install
 	php70_install
   elif [ "$stackinput" = "3" ]; then
-    nginx_install
+    django_install
   elif [[ $stackinput = "b" || $stackinput = "B" ]];then
     setwebstack
   fi
