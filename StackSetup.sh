@@ -484,7 +484,7 @@ nginx_install () {
   echo "nginx status is:"
   systemctl status nginx
   echo "Please visit http://"$LOCALIP" in a web browser and verify that nginx is working."
-  echo "Press y to verify and continue, or any other key to quit. [y|N]"
+  echo "Press y to verify and continue, or any other key to quit. [y|Any Other Key]"
   read -n 1 -p "Input Selection:" verifynginx
   if [[ $verifynginx = "y" || $verifynginx = "Y" ]];then
 	mainmenu
@@ -502,10 +502,11 @@ django_install () {
   apt install python3-pip javascript-common libjs-jquery python-django-common python3-django python3-sqlparse python3-tz
   echo "The following version of django has been installed:"
   python3 -c "import django; print(django.get_version())"
-  echo "Press y to verify and continue, or any other key to quit. [y|N]"
+  echo "Press y to verify and continue, or any other key to quit. [y|Any Other Key]"
   read -n 1 -p "Input Selection:" verifydjango
-  if [ "$verifydjango" = "y" || "$verifydjango" = "Y" ]; then
-	read -n 1 -p "Enable some Python-django Mods? [y]" enableadjangomods
+  if [[ "$verifydjango" = "y" || "$verifydjango" = "Y" ]]; then
+	echo ""
+	read -n 1 -p "Enable some Python-django Mods? [y|Any Other Key]" enableadjangomods
 	if [[ $enableadjangomods = "y" || $enableadjangomods = "Y" ]];then
 	  djangomod_menu
 	else
