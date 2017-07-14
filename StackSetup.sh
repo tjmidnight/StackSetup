@@ -401,8 +401,8 @@ redis_install () {
   cd redis-stable
   make
   make test
-  echo "Please verify that make tests passed (see above)"
-  read -n 1 -p "or any other key to quit." verifytest
+  echo "Please press [y] to verify that make tests passed "
+  read -n 1 -p "(see above) or any other key to quit." verifytest
   if [[ $verifytest = "y" || $verifytest = "Y" ]];then
     make install
 	mkdir /etc/redis
