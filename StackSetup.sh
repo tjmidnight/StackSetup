@@ -146,7 +146,7 @@ setwebstack () {
   infobloc
   echo "Press 1 to install LAMP - apache2, mysql, php7 - stack"
   echo "Press 2 to install LEMP - apache2, mysql, php7 - stack"
-  echo "Press 3 to install django - Python3 - stack"
+  echo "Press 3 to install python3-django stack"
   echo "Press b to go back"
   read -n 1 -p "Input Selection:" stackinput
   if [ "$stackinput" = "1" ]; then
@@ -309,7 +309,7 @@ djangomod_menu () {
   echo "Press 7 to install requests_oauthlib"
   echo "Press 8 to install libtidy"
   echo ""
-  echo "Press 9 to install all mods"
+  echo "Press 9 to install all mods (except redis)"
   echo "Press b to go back"
   read -n 1 -p "Input Selection:" djangoinput
   if [ "$djangoinput" = "1" ]; then
@@ -345,7 +345,6 @@ elif [ "$djangoinput" = "8" ]; then
 	clear
 	setwebstack
 elif [ "$djangoinput" = "9" ]; then
-    redis_install
 	apt install python3-djangorestframework python3-django-formtools python3-arrow libtidy-dev -y
 	pip3 install django-js-reverse pypandoc requests requests_oauthlib
 	clear
@@ -399,36 +398,35 @@ redis_install () {
   cd redis-stable
   make
   make test
-  make install
-  mkdir /etc/redis
-  cp redis.conf /etc/redis
-  sed  -i "s/\(supervised *\).*/\1systemd/" /etc/redis/redis.conf
-  sed -i '/dir .\//c\dir /var/lib/redis;' /etc/redis/redis.conf
-  echo "[Unit]" > /etc/systemd/system/redis.service
-  echo "Description=Redis In-Memory Data Store" >> /etc/systemd/system/redis.service
-  echo "After=network.target" >> /etc/systemd/system/redis.service
-  echo "" >> /etc/systemd/system/redis.service
-  echo "[Service]" >> /etc/systemd/system/redis.service
-  echo "User=redis" >> /etc/systemd/system/redis.service
-  echo "Group=redis" >> /etc/systemd/system/redis.service
-  echo "ExecStart=/usr/local/bin/redis-server /etc/redis/redis.conf" >> /etc/systemd/system/redis.service
-  echo "ExecStop=/usr/local/bin/redis-cli shutdown" >> /etc/systemd/system/redis.service
-  echo "Restart=always" >> /etc/systemd/system/redis.service
-  echo "" >> /etc/systemd/system/redis.service
-  echo "[Install]" >> /etc/systemd/system/redis.service
-  echo "WantedBy=multi-user.target" >> /etc/systemd/system/redis.service
-  adduser --system --group --no-create-home redis
-  mkdir /var/lib/redis
-  chown redis:redis /var/lib/redis
-  chmod 770 /var/lib/redis
-  systemctl start redis
-  cd ..
-  echo "redis status is:"
-  systemctl status redis
-  echo "Press [Y] to enable redis autostart at boot,"
-  read -n 1 -p "or any other key to quit." enableredis
-  if [[ $enableredis = "y" || $enableredis = "Y" ]];then
-    systemctl enable redis
+  echo "Please verify that make tests passed (see above)"
+  read -n 1 -p "or any other key to quit." verifytest
+  if [[ $verifytest = "y" || $verifytest = "Y" ]];then
+    make install
+	mkdir /etc/redis
+	cp redis.conf /etc/redis
+	sed  -i "s/\(supervised *\).*/\1auto/" /etc/redis/redis.conf
+	sed -i '/dir .\//c\dir /var/lib/redis;' /etc/redis/redis.conf
+	sed -i '/damonize/c\daemonize yes' /etc/redis/redis.conf
+	echo "[Unit]" > /etc/systemd/system/redis.service
+	echo "Description=Redis In-Memory Data Store" >> /etc/systemd/system/redis.service
+	echo "After=network.target" >> /etc/systemd/system/redis.service
+	echo "" >> /etc/systemd/system/redis.service
+	echo "[Service]" >> /etc/systemd/system/redis.service
+	echo "User=redis" >> /etc/systemd/system/redis.service
+	echo "Group=redis" >> /etc/systemd/system/redis.service
+	echo "ExecStart=/usr/local/bin/redis-server /etc/redis/redis.conf" >> /etc/systemd/system/redis.service
+	echo "ExecStop=/usr/local/bin/redis-cli shutdown" >> /etc/systemd/system/redis.service
+	echo "Restart=always" >> /etc/systemd/system/redis.service
+	echo "" >> /etc/systemd/system/redis.service
+	echo "[Install]" >> /etc/systemd/system/redis.service
+	echo "WantedBy=multi-user.target" >> /etc/systemd/system/redis.service
+	adduser --system --group --no-create-home redis
+	mkdir /var/lib/redis
+	chown redis:redis /var/lib/redis
+	chmod 770 /var/lib/redis
+	/usr/local/bin/redis-server /etc/redis/redis.conf
+	# Systemctl doesn't function properly in proxmox / lxc
+	sed -i "14i\\/usr\/local\/bin\/redis-server \/etc\/redis\/redis.conf" /etc/rc.local
 	pip3 install django-redis
 	sed -i "/django.core.cache.backends.locmem.LocMemCache/c\        'BACKEND': 'django_redis.cache.RedisCache'," /usr/lib/python3/dist-packages/django/conf/global_settings.py
 	#These are based on line numbers and will break at some point.
@@ -438,8 +436,10 @@ redis_install () {
 	sed -i "504i\        }" /usr/lib/python3/dist-packages/django/conf/global_settings.py
 	sed -i "/SESSION_ENGINE/c\SESSION_ENGINE = 'django.contrib.sessions.backends.cache'" /usr/lib/python3/dist-packages/django/conf/global_settings.py
   else
-	quitscript
-  fi 
+	mainmenu
+  fi
+
+   
 }
 
 # Install Apache2 - Webstack Component
@@ -506,6 +506,7 @@ django_install () {
   if [[ "$verifydjango" = "y" || "$verifydjango" = "Y" ]]; then
 	echo ""
 	read -n 1 -p "Enable some Python-django Mods? [y|Any Other Key]" enableadjangomods
+	echo ""
 	if [[ $enableadjangomods = "y" || $enableadjangomods = "Y" ]];then
 	  djangomod_menu
 	else
@@ -577,17 +578,17 @@ php_build_nginx_config () {
 # Do Not Change
 # Invalid Selection in Menus
 invalidselection () {
-    clear
-    echo "You have entered an invalid selection!"
-    echo "Please try again!"
-    echo ""
-    echo "Press any key to continue..."
-    read -n 1
+  clear
+  echo "You have entered an invalid selection!"
+  echo "Please try again!"
+  echo ""
+  echo "Press any key to continue..."
+  read -n 1
 }
 # Q q - Press Q to Quit
 quitscript () {
-	clear
-	exit 0
+  clear
+  exit 0
 }
 ######################### Enable And Exit Bits #########################
 # Do Not Change
