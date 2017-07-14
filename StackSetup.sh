@@ -403,7 +403,7 @@ redis_install () {
   mkdir /etc/redis
   cp redis.conf /etc/redis
   sed -i '/supervised/c\supervised systemd;' /etc/redis/redis.conf
-  sed -i '/dir/c\dir /var/lib/redis;' /etc/redis/redis.conf
+  sed -i '/dir .\//c\dir /var/lib/redis;' /etc/redis/redis.conf
   echo "[Unit]" > /etc/systemd/system/redis.service
   echo "Description=Redis In-Memory Data Store" >> /etc/systemd/system/redis.service
   echo "After=network.target" >> /etc/systemd/system/redis.service
@@ -430,7 +430,6 @@ redis_install () {
   if [[ $enableredis = "y" || $enableredis = "Y" ]];then
     systemctl enable redis
 	pip3 install django-redis
-	#Modify /usr/lib/python3/dist-packages/django/conf/global_settings.py
 	sed -i "/django.core.cache.backends.locmem.LocMemCache/c\        'BACKEND': 'django_redis.cache.RedisCache'," /usr/lib/python3/dist-packages/django/conf/global_settings.py
 	#These are based on line numbers and will break at some point.
 	sed -i "501i\        'LOCATION': 'redis://127.0.0.1:6379/1'," /usr/lib/python3/dist-packages/django/conf/global_settings.py
