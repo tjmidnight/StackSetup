@@ -108,7 +108,7 @@ updatesystem () {
   echo "I will be adding other distros as time permits."
   echo ""
   echo "Each option here is cumulative."
-  echo "Option 3 runs Option 1 and two as well."
+  echo "Option 3 runs Option 1 and 2 as well."
   echo ""
   echo "Press 1 to update the repositories"
   echo "Press 2 to upgrade the server"
@@ -364,11 +364,13 @@ infobloc () {
   clear
   
   echo "NOTE: If IP isn't visible, you did not pay attention to the warning at the beginning."
+  echo ""
   echo "OS:										"$OSST
   echo "Architecture:							"$ARCH
   echo "IP Address:								"$LOCALIP
   echo ""
   echo "Script Location:						"$SCRIPT
+  echo ""
 }
 
 # Functionality for adding self signed cert.
