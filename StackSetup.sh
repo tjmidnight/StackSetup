@@ -124,14 +124,14 @@ updatesystem () {
       apt update
       apt upgrade -y
       #bc is an arbitrary precision numeric processing language. Helps with evaluating version numbers.
-	  apt install bc
+	  apt install bc -y
       updatesystem
   elif [ "$updateinput" = "3" ]; then
       apt update
       apt upgrade -y
       apt dist-upgrade -y
       #bc is an arbitrary precision numeric processing language. Helps with evaluating version numbers.
-	  apt install bc
+	  apt install bc -y
       updatesystem
   elif [[ $updateinput = "b" || $updateinput = "B" ]];then
       mainmenu
@@ -218,35 +218,35 @@ php7addons_menu () {
   echo "Press b to go back"
   read -n 1 -p "Input Selection:" phpaddinput
   if [ "$phpaddinput" = "1" ]; then
-    apt install php7.0-dev
+    apt install php7.0-dev -y
 	/etc/init.d/php7.0-fpm restart
 	clear
   elif [ "$phpaddinput" = "2" ]; then
-    apt install php7.0-cli
+    apt install php7.0-cli -y
 	/etc/init.d/php7.0-fpm restart
 	clear
   elif [ "$phpaddinput" = "3" ]; then
-    apt install php7.0-json
+    apt install php7.0-json -y
 	/etc/init.d/php7.0-fpm restart
 	clear
   elif [ "$phpaddinput" = "4" ]; then
-    apt install php7.0-gd
+    apt install php7.0-gd -y
 	/etc/init.d/php7.0-fpm restart
 	clear
   elif [ "$phpaddinput" = "5" ]; then
-    apt install php7.0-curl
+    apt install php7.0-curl -y
 	/etc/init.d/php7.0-fpm restart
 	clear
   elif [ "$phpaddinput" = "6" ]; then
-    apt install php7.0-xml
+    apt install php7.0-xml -y
 	/etc/init.d/php7.0-fpm restart
 	clear
   elif [ "$phpaddinput" = "7" ]; then
-    apt install php7.0-mbstring
+    apt install php7.0-mbstring -y
 	/etc/init.d/php7.0-fpm restart
 	clear
   elif [ "$phpaddinput" = "8" ]; then
-    apt install php7.0-dev php7.0-cli php7.0-json php7.0-gd php7.0-curl php7.0-xml php7.0-mbstring
+    apt install php7.0-dev php7.0-cli php7.0-json php7.0-gd php7.0-curl php7.0-xml php7.0-mbstring -y
 	/etc/init.d/php7.0-fpm restart
 	clear
   elif [[ $phpaddinput = "b" || $phpaddinput = "B" ]];then
@@ -317,15 +317,15 @@ djangomod_menu () {
 	clear
 	djangomod_menu
   elif [ "$djangoinput" = "2" ]; then
-    apt install python3-djangorestframework
+    apt install python3-djangorestframework -y
 	clear
 	djangomod_menu
   elif [ "$djangoinput" = "3" ]; then
-    apt install python3-django-formtools
+    apt install python3-django-formtools -y
 	clear
 	djangomod_menu
   elif [ "$djangoinput" = "4" ]; then
-    apt install python3-arrow
+    apt install python3-arrow -y
 	clear
 	setwebstack
   elif [ "$djangoinput" = "5" ]; then
@@ -341,12 +341,12 @@ elif [ "$djangoinput" = "7" ]; then
 	clear
 	setwebstack
 elif [ "$djangoinput" = "8" ]; then
-    apt install libtidy-dev
+    apt install libtidy-dev -y
 	clear
 	setwebstack
 elif [ "$djangoinput" = "9" ]; then
     redis_install
-	apt install python3-djangorestframework python3-django-formtools python3-arrow libtidy-dev
+	apt install python3-djangorestframework python3-django-formtools python3-arrow libtidy-dev -y
 	pip3 install django-js-reverse pypandoc requests requests_oauthlib
 	clear
 	setwebstack
@@ -393,7 +393,7 @@ selfsigned () {
 }
 
 redis_install () {
-  apt install build-essential tcl curl
+  apt install build-essential tcl curl -y
   curl -O http://download.redis.io/redis-stable.tar.gz
   tar xzvf redis-stable.tar.gz
   cd redis-stable
@@ -401,7 +401,7 @@ redis_install () {
   make test
   make install
   mkdir /etc/redis
-  cp "$DIR"/redis.conf /etc/redis
+  cp redis.conf /etc/redis
   sed -i '/supervised/c\supervised systemd;' /etc/redis/redis.conf
   sed -i '/dir/c\dir /var/lib/redis;' /etc/redis/redis.conf
   echo "[Unit]" > /etc/systemd/system/redis.service
@@ -445,7 +445,7 @@ redis_install () {
 
 # Install Apache2 - Webstack Component
 apache2_install () {
-  apt install apache2 apache2-utils
+  apt install apache2 apache2-utils -y
   sed  -i "s/\(ServerSignature *\).*/\1Off/" /etc/apache2/conf-enabled/security.conf
   sed  -i "s/\(ServerTokens *\).*/\1Prod/" /etc/apache2/conf-enabled/security.conf
 
@@ -474,7 +474,7 @@ apache2_install () {
 
 # Install nginx - Webstack Component
 nginx_install () {
-  apt install nginx
+  apt install nginx -y
   sed -i '/server_tokens/c\server_tokens off;' /etc/nginx/nginx.conf
   sed -i '/server_name_in_redirect/c\server_name_in_redirect off;' /etc/nginx/nginx.conf
   chown www-data:www-data /usr/share/nginx/html -R
@@ -499,7 +499,7 @@ nginx_install () {
 
 # Install python - django - Webstack Component
 django_install () {
-  apt install python3-pip javascript-common libjs-jquery python-django-common python3-django python3-sqlparse python3-tz
+  apt install python3-pip javascript-common libjs-jquery python-django-common python3-django python3-sqlparse python3-tz -y
   echo "The following version of django has been installed:"
   python3 -c "import django; print(django.get_version())"
   echo "Press y to verify and continue, or any other key to quit. [y|Any Other Key]"
@@ -518,26 +518,26 @@ django_install () {
 
 # Install mysql - Webstack Component
 mysql_install () {
-  apt install mysql-server
+  apt install mysql-server -y
   mysql_secure_installation
 }
 
 # Install PHP7.0 - Webstack Component
 php70_install () {
-  apt install php7.0 php7.0-mcrypt php7.0-common 
+  apt install php7.0 php7.0-mcrypt php7.0-common -y
   if [ pidof apache2 > /dev/null ]; then
-	apt install libapache2-mod-php7.0
+	apt install libapache2-mod-php7.0 -y
 	a2enmod php7.0
 	/etc/init.d/apache2 restart
   fi
   if [ pidof nginx > /dev/null ]; then
-    apt install php7.0-fpm 
+    apt install php7.0-fpm -y
     php_build_nginx_config
 	sed -i '/cgi.fix_pathinfo/c\cgi.fix_pathinfo=0' /etc/php/7.0/fpm/php.ini
 	/etc/init.d/nginx restart
   fi
   if [ pidof mysql-server > /dev/null ]; then
-    apt install php7.0-mysql 
+    apt install php7.0-mysql  -y
   fi
   read -n 1 -p "Install PHP7.0 Addons? [y]" enablephp7addons
   if [ "$enablephp7addons" = "(y|Y)" ]; then
