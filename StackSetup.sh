@@ -146,6 +146,7 @@ setwebstack () {
   infobloc
   echo "Press 1 to install LAMP - apache2, mysql, php7 - stack"
   echo "Press 2 to install LEMP - apache2, mysql, php7 - stack"
+  echo "Press 3 to install django - Python3 - stack"
   echo "Press b to go back"
   read -n 1 -p "Input Selection:" stackinput
   if [ "$stackinput" = "1" ]; then
@@ -156,7 +157,9 @@ setwebstack () {
     nginx_install
 	mysql_install
 	php70_install
-  elif [[ $a2enput = "b" || $a2enput = "B" ]];then
+  elif [ "$stackinput" = "3" ]; then
+    nginx_install
+  elif [[ $stackinput = "b" || $stackinput = "B" ]];then
     setwebstack
   fi
 }
@@ -200,6 +203,7 @@ a2enmod_menu () {
   fi 
 }
 
+# PHP7.0 Addons - Webstack Component
 php7addons_menu () {
   echo "This submenu enables some common PHP addons."
   echo "Press 1 install php7.0-dev"
@@ -253,6 +257,7 @@ php7addons_menu () {
   fi
 }
 
+# PHP Configuration
 php7config () {
   read -n 1 -p "Enable php info? [y]" php_info
     if [ "$php_info" = "(y|Y)" ]; then
@@ -292,6 +297,43 @@ php7config () {
   setwebstack
 }
 
+# django mods  - Webstack Component
+djangomod_menu () {
+  echo "This submenu enables some common django addons."
+  echo "Press 1 to enable redis"
+  echo "Press 2 to enable mod headers"
+  echo "Press 3 to enable mod ssl"
+  echo ""
+  echo "Press 4 to enable all mods"
+  echo "Press b to go back"
+  read -n 1 -p "Input Selection:" djangoinput
+  if [ "$djangoinput" = "1" ]; then
+    
+	clear
+	a2enmod_menu
+  elif [ "$djangoinput" = "2" ]; then
+    a2enmod headers
+	/etc/init.d/apache2 restart
+	clear
+	a2enmod_menu
+  elif [ "$djangoinput" = "3" ]; then
+    a2enmod ssl
+	/etc/init.d/apache2 restart
+	clear
+	a2enmod_menu
+  elif [ "$djangoinput" = "4" ]; then
+    a2enmod rewrite ssl headers
+	/etc/init.d/apache2 restart
+	clear
+	setwebstack
+  elif [[ $djangoinput = "b" || $djangoinput = "B" ]];then
+      setwebstack
+  else
+      invalidselection
+      a2enmod_menu
+  fi 
+}
+
 ############################# Not Menus ############################
 # Server Info: Clears screen & displays information about server.
 infobloc () {
@@ -307,22 +349,58 @@ infobloc () {
 
 # Functionality for adding self signed cert.
 selfsigned () {
-      echo "Installing CA Certificate to /usr/share/ca-certificates/StackSetup/CA.crt"
-	  echo "Press any key to continue..."
-      read -n 1 -p
- 
-	  mkdir /usr/share/ca-certificates/StackSetup
-	  touch /usr/share/ca-certificates/StackSetup/CA.crt
+  echo "Installing CA Certificate to /usr/share/ca-certificates/StackSetup/CA.crt"
+  echo "Press any key to continue..."
+  read -n 1 -p
+  mkdir /usr/share/ca-certificates/StackSetup
+  touch /usr/share/ca-certificates/StackSetup/CA.crt
+  
+  sh -c "echo 'Erase this, then copy the contents of your CA File here.' > /usr/share/ca-certificates/StackSetup/CA.crt"
 	  
-      sh -c "echo 'Erase this, then copy the contents of your CA File here.' > /usr/share/ca-certificates/StackSetup/CA.crt"
+  nano /usr/share/ca-certificates/StackSetup/CA.crt
+  echo "Please select yes, then place a star next to StackSetup/CA.crt to enable your certificate."
+  echo "Press any key to continue..."
+  read -n 1
 	  
-	  nano /usr/share/ca-certificates/StackSetup/CA.crt
-	  echo "Please select yes, then place a star next to StackSetup/CA.crt to enable your certificate."
-	  echo "Press any key to continue..."
-      read -n 1
-	  
-	  dpkg-reconfigure ca-certificates
-	  settzdata
+  dpkg-reconfigure ca-certificates
+  settzdata
+}
+
+django_redis () {
+  apt install build-essential tcl curl
+  curl -O http://download.redis.io/redis-stable.tar.gz
+  tar xzvf redis-stable.tar.gz
+  cd redis-stable
+  make
+  make test
+  make install
+  mkdir /etc/redis
+  cp "$DIR"/redis.conf /etc/redis
+  sed -i '/supervised/c\supervised systemd;' /etc/redis/redis.conf
+  sed -i '/dir/c\dir /var/lib/redis;' /etc/redis/redis.conf
+  echo "[Unit]" > /etc/systemd/system/redis.service
+  echo "Description=Redis In-Memory Data Store" >> /etc/systemd/system/redis.service
+  echo "After=network.target" >> /etc/systemd/system/redis.service
+  echo "" >> /etc/systemd/system/redis.service
+  echo "[Service]" >> /etc/systemd/system/redis.service
+  echo "User=redis" >> /etc/systemd/system/redis.service
+  echo "Group=redis" >> /etc/systemd/system/redis.service
+  echo "ExecStart=/usr/local/bin/redis-server /etc/redis/redis.conf" >> /etc/systemd/system/redis.service
+  echo "ExecStop=/usr/local/bin/redis-cli shutdown" >> /etc/systemd/system/redis.service
+  echo "Restart=always" >> /etc/systemd/system/redis.service
+  echo "" >> /etc/systemd/system/redis.service
+  echo "[Install]" >> /etc/systemd/system/redis.service
+  echo "WantedBy=multi-user.target" >> /etc/systemd/system/redis.service
+  adduser --system --group --no-create-home redis
+  mkdir /var/lib/redis
+  chown redis:redis /var/lib/redis
+  chmod 770 /var/lib/redis
+  systemctl start redis
+  cd ..
+  echo "redis status is:"
+  systemctl status redis
+  echo "Press any key to continue..."
+  read -n 1 
 }
 
 # Install Apache2 - Webstack Component
@@ -354,7 +432,7 @@ apache2_install () {
   fi
 }
 
-
+# Install nginx - Webstack Component
 nginx_install () {
   apt install nginx
   sed -i '/server_tokens/c\server_tokens off;' /etc/nginx/nginx.conf
@@ -369,11 +447,34 @@ nginx_install () {
   echo "Press y to verify and continue, or any other key to quit. [y|N]"
   read -n 1 -p "Input Selection:" verifynginx
   if [[ $verifynginx = "y" || $verifynginx = "Y" ]];then
-	setwebstack
+	mainmenu
   else
-    quitscript
+    echo "Either your input was not y, or apache2 is not running."
+    echo "Press any key to continue..."
+    read -n 1
+    clear
+    setwebstack
   fi
 }
+
+# Install python - django - Webstack Component
+django_install () {
+  apt install python3-pip javascript-common libjs-jquery python-django-common python3-django python3-sqlparse python3-tz
+  echo "The following version of nginx has been installed:"
+  django-admin -v
+  echo "Press y to verify and continue, or any other key to quit. [y|N]"
+  read -n 1 -p "Input Selection:" verifydjango
+  if [ "$verifydjango" = "(y|Y)" ]; then
+	read -n 1 -p "Enable some Apache2 Mods? [y]" enableadjangomods
+	if [[ $enableadjangomods = "y" || $enableadjangomods = "Y" ]];then
+	  djangomod_menu
+	else
+	  mainmenu
+	fi
+  fi
+  mainmenu
+}
+
 # Install mysql - Webstack Component
 mysql_install () {
   apt install mysql-server
