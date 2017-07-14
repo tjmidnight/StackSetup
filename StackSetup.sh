@@ -402,7 +402,7 @@ redis_install () {
   make install
   mkdir /etc/redis
   cp redis.conf /etc/redis
-  sed -i '/supervised/c\supervised systemd;' /etc/redis/redis.conf
+  sed  -i "s/\(supervised *\).*/\1systemd/" /etc/redis/redis.conf
   sed -i '/dir .\//c\dir /var/lib/redis;' /etc/redis/redis.conf
   echo "[Unit]" > /etc/systemd/system/redis.service
   echo "Description=Redis In-Memory Data Store" >> /etc/systemd/system/redis.service
