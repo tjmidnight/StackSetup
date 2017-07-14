@@ -25,12 +25,6 @@
 # Clear the terminal
 clear
 
-echo "                     -----=====WARNING=====-----"
-echo "The most common reason for any part of this script failing is formatting."
-echo "           Putty, WSL and other such emulators wrap lines."
-echo " Paste this script into a fullscreen terminal or it *will* break things."
-echo "					   Press any key to continue..."
-read -n 1
 ######################### Variables / Globals #########################
 # Get OS information.
 OS=$(lsb_release -si)
@@ -372,6 +366,15 @@ infobloc () {
   echo ""
 }
 
+warninfo () {
+echo "                     -----=====WARNING=====-----"
+echo "The most common reason for any part of this script failing is formatting."
+echo "           Putty, WSL and other such emulators wrap lines."
+echo " Paste this script into a fullscreen terminal or it *will* break things."
+echo "					   Press any key to continue..."
+read -n 1
+}
+
 # Functionality for adding self signed cert.
 selfsigned () {
   echo "Installing CA Certificate to /usr/share/ca-certificates/StackSetup/CA.crt"
@@ -593,6 +596,7 @@ quitscript () {
 ######################### Enable And Exit Bits #########################
 # Do Not Change
 # Script Runs from here:
+warninfo
 mainmenu
 # On the off chance that it ever actually makes it here (it shouldn't):
 exit 0
