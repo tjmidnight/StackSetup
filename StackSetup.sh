@@ -300,37 +300,61 @@ php7config () {
 # django mods  - Webstack Component
 djangomod_menu () {
   echo "This submenu enables some common django addons."
-  echo "Press 1 to enable redis"
-  echo "Press 2 to enable mod headers"
-  echo "Press 3 to enable mod ssl"
+  echo "Press 1 to install redis"
+  echo "Press 2 to install django REST framework"
+  echo "Press 3 to install django formtools"
+  echo "Press 4 to install python3-arrow"
+  echo "Press 5 to install django js reverse"
+  echo "Press 6 to install pypandoc"
+  echo "Press 7 to install requests_oauthlib"
+  echo "Press 8 to install libtidy"
   echo ""
-  echo "Press 4 to enable all mods"
+  echo "Press 9 to install all mods"
   echo "Press b to go back"
   read -n 1 -p "Input Selection:" djangoinput
   if [ "$djangoinput" = "1" ]; then
-    
+    redis_install
 	clear
-	a2enmod_menu
+	djangomod_menu
   elif [ "$djangoinput" = "2" ]; then
-    a2enmod headers
-	/etc/init.d/apache2 restart
+    apt install python3-djangorestframework
 	clear
-	a2enmod_menu
+	djangomod_menu
   elif [ "$djangoinput" = "3" ]; then
-    a2enmod ssl
-	/etc/init.d/apache2 restart
+    apt install python3-django-formtools
 	clear
-	a2enmod_menu
+	djangomod_menu
   elif [ "$djangoinput" = "4" ]; then
-    a2enmod rewrite ssl headers
-	/etc/init.d/apache2 restart
+    apt install python3-arrow
+	clear
+	setwebstack
+  elif [ "$djangoinput" = "5" ]; then
+    pip3 install django-js-reverse
+	clear
+	setwebstack
+elif [ "$djangoinput" = "6" ]; then
+    pip3 install pypandoc
+	clear
+	setwebstack
+elif [ "$djangoinput" = "7" ]; then
+    pip3 install requests requests_oauthlib
+	clear
+	setwebstack
+elif [ "$djangoinput" = "8" ]; then
+    apt install libtidy-dev
+	clear
+	setwebstack
+elif [ "$djangoinput" = "9" ]; then
+    redis_install
+	apt install python3-djangorestframework python3-django-formtools python3-arrow libtidy-dev
+	pip3 install django-js-reverse pypandoc requests requests_oauthlib
 	clear
 	setwebstack
   elif [[ $djangoinput = "b" || $djangoinput = "B" ]];then
       setwebstack
   else
       invalidselection
-      a2enmod_menu
+      djangomod_menu
   fi 
 }
 
@@ -366,7 +390,7 @@ selfsigned () {
   settzdata
 }
 
-django_redis () {
+redis_install () {
   apt install build-essential tcl curl
   curl -O http://download.redis.io/redis-stable.tar.gz
   tar xzvf redis-stable.tar.gz
@@ -399,8 +423,22 @@ django_redis () {
   cd ..
   echo "redis status is:"
   systemctl status redis
-  echo "Press any key to continue..."
-  read -n 1 
+  echo "Press [Y] to enable redis autostart at boot,"
+  read -n 1 -p "or any other key to quit." enableredis
+  if [[ $enableredis = "y" || $enableredis = "Y" ]];then
+    systemctl enable redis
+	pip3 install django-redis
+	#Modify /usr/lib/python3/dist-packages/django/conf/global_settings.py
+	sed -i "/django.core.cache.backends.locmem.LocMemCache/c\        'BACKEND': 'django_redis.cache.RedisCache'," /usr/lib/python3/dist-packages/django/conf/global_settings.py
+	#These are based on line numbers and will break at some point.
+	sed -i "501i\        'LOCATION': 'redis://127.0.0.1:6379/1'," /usr/lib/python3/dist-packages/django/conf/global_settings.py
+	sed -i "502i\        'OPTIONS': {" /usr/lib/python3/dist-packages/django/conf/global_settings.py
+	sed -i "503i\            'CLIENT_CLASS': 'django_redis.client.DefaultClient'," /usr/lib/python3/dist-packages/django/conf/global_settings.py
+	sed -i "504i\        }" /usr/lib/python3/dist-packages/django/conf/global_settings.py
+	sed -i "/SESSION_ENGINE/c\SESSION_ENGINE = 'django.contrib.sessions.backends.cache'" /usr/lib/python3/dist-packages/django/conf/global_settings.py
+  else
+	quitscript
+  fi 
 }
 
 # Install Apache2 - Webstack Component
@@ -465,7 +503,7 @@ django_install () {
   echo "Press y to verify and continue, or any other key to quit. [y|N]"
   read -n 1 -p "Input Selection:" verifydjango
   if [ "$verifydjango" = "(y|Y)" ]; then
-	read -n 1 -p "Enable some Apache2 Mods? [y]" enableadjangomods
+	read -n 1 -p "Enable some Python-django Mods? [y]" enableadjangomods
 	if [[ $enableadjangomods = "y" || $enableadjangomods = "Y" ]];then
 	  djangomod_menu
 	else
