@@ -321,30 +321,30 @@ djangomod_menu () {
   elif [ "$djangoinput" = "4" ]; then
     apt install python3-arrow -y
 	clear
-	setwebstack
+	djangomod_menu
   elif [ "$djangoinput" = "5" ]; then
     pip3 install django-js-reverse
 	clear
-	setwebstack
+	djangomod_menu
 elif [ "$djangoinput" = "6" ]; then
     pip3 install pypandoc
 	clear
-	setwebstack
+	djangomod_menu
 elif [ "$djangoinput" = "7" ]; then
     pip3 install requests requests_oauthlib
 	clear
-	setwebstack
+	djangomod_menu
 elif [ "$djangoinput" = "8" ]; then
     apt install libtidy-dev -y
 	clear
-	setwebstack
+	djangomod_menu
 elif [ "$djangoinput" = "9" ]; then
 	apt install python3-djangorestframework python3-django-formtools python3-arrow libtidy-dev -y
 	pip3 install django-js-reverse pypandoc requests requests_oauthlib
 	clear
-	setwebstack
+	djangomod_menu
   elif [[ $djangoinput = "b" || $djangoinput = "B" ]];then
-      setwebstack
+      djangomod_menu
   else
       invalidselection
       djangomod_menu
